@@ -1,48 +1,65 @@
 /*
-Todo:
-
--Convert up time to seconds then minutes then hours
--output binary representation of time
--change toggle button to single output for two seperate buttons
-WARNING: DO NOT OUTPUT HIGH VOLTAGE YOUL WILL END UP BRAKING AN LED (i already wired all the wrong resitors in)
-
+Cameron Salisbury
+Binary clock for an Arduino
+Comments:
+I will be construcing an arduino to mimic a clock and tell time in binary
+TODO:
+-Test on arduino
+-add button to adjust time
 */
 
-// constants won't change. They're used here to set pin numbers:
-//More buttons pins here
-const int buttonPin = 2;  // the number of the pushbutton pin
-const int ledPin = 13;    // the number of the LED pin
-
-// variables will change:
-int buttonState, ledState, lastButtonState = 0;  // variable for reading the pushbutton status
+//Declaring binary leds that will tell the time m for minutes, h for hours
+const int minutePins[6] = {m0, m1, m2, m3, m4, m5};
+const int hourPins[4] = {h0, h1, h2, h3};
+int hour = 1;
+int minute = 0;
+int tick = 0;
 
 void setup() {
-  // initialize the LED pin as an output:
-  pinMode(ledPin, OUTPUT);
-  // initialize the pushbutton pin as an input:
-  pinMode(buttonPin, INPUT);
+  // put your setup code here, to run once:
+  for (int i = 0; i < 6; i++) {
+    pinMode(minutePins[i], OUTPUT);
+  }
+  for (int i = 0; i < 4; i++) {
+    pinMode(hourPins[i], OUTPUT);
+  }
 }
 
-unsigned long previousMillis = 0;  //counter
-const long interval = 10;          //button read time
-int toggle = false;               //light reading
-
 void loop() {
-  // read the state of the pushbutton value:
-  buttonState = digitalRead(buttonPin);
+  // put your main code here, to run repeatedly:
+  //count the time
+  //hour never starts at 0
+  int tock = millis() / 60000;
 
-  if (buttonState != lastButtonState) {
-    previousMillis = millis();
-  }
-
-  if (millis() - previousMillis >= interval) {
-    if (buttonState != toggle) {
-      toggle = buttonState;
-      if (toggle == HIGH) {
-        ledState = !ledState;
+  //divide milisionds by 60000 (miliseconds(1000) * seconds(60))
+  if (tick != tock){
+    minute++;
+    if (minute == 60){
+      minute = 0;
+      hour++;
+      if (hour == 13){
+        hour = 1;
       }
     }
+    //global variables grumble grumble
+    displayMinute();
+    displayHour();
+    tick = tock;
   }
-  digitalWrite(ledPin, ledState);
-  lastButtonState = buttonState;
+}
+
+void displayMinute(){
+  //I think the for loop might be holding this back
+  for (int i = 4; i >= 0; i--){
+    digitalWrite(minutePins[i], (minute % 2 == 1) ? HIGH : LOW);
+    min = min / 2;
+  }
+}
+
+void displayHour(){
+  //same as minutes for loop is suspected to hold this back
+  for (int i = 3; i >= 0; i--){
+    digitalWrite(hourPins[i], (hour % 2 == 1) ? HIGH : LOW);
+    hour = hour / 2;
+  }
 }
